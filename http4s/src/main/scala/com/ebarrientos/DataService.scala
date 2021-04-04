@@ -21,12 +21,6 @@ class DataService(dao: DataDao) {
   private val dsl = new Http4sDsl[Task] {}
   import dsl._
 
-  // implicit def circeJsonEncoder[A](implicit decoder: Encoder[A]):
-  //     EntityEncoder[Task, A] = jsonEncoderOf[Task, A]
-
-  // implicit def dataEncoder: Encoder[Data] = deriveEncoder
-  // implicit def dataDecoder: Decoder[Data] = deriveDecoder
-
   val r = zio.Runtime.default
 
   val dataService = HttpRoutes.of[Task] {

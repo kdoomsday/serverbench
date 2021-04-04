@@ -12,15 +12,6 @@ object Server extends zio.App {
   val dao = new DataDaoImp()
   val dataService = new DataService(dao)
 
-  // private def mkServer(blocker: Blocker): ZIO[Any, Throwable, Unit] =
-  //   ZIO.runtime[Any].flatMap(implicit rts =>
-  //     BlazeServerBuilder[Task]
-  //       .bindHttp(9000, "localhost")
-  //       .withHttpApp(dataService.app)
-  //       .serve
-  //       .compile
-  //       .drain
-  //   )
   private def mkServer(): ZIO[Any, Throwable, Unit] =
     ZIO.runtime[Any].flatMap(implicit rts =>
       BlazeServerBuilder[Task]
@@ -30,8 +21,6 @@ object Server extends zio.App {
         .compile
         .drain
     )
-
-  // val server = mkServer()
 
   def run(args: List[String]) =
     mkServer().catchAll(_ => Task.succeed(ExitCode(2))).map(_ => ExitCode(1))
