@@ -54,7 +54,7 @@ lazy val circeDeps = Seq(
 ).map(_ % circeVersion)
 
 // ZIO
-val zioVersion     = "1.0.3"
+val zioVersion     = "1.0.5"
 val zioCatsVersion = "2.2.0.1"
 lazy val zioDeps = Seq(
   "dev.zio" %% "zio"              % zioVersion,
