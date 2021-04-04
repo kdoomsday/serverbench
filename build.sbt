@@ -38,7 +38,8 @@ lazy val http4s = (project in file("http4s"))
 lazy val ziohttp = (project in file("ziohttp"))
   .dependsOn(core)
   .settings(
-    libraryDependencies ++= zioDeps
+    libraryDependencies ++= zioDeps,
+    libraryDependencies ++= zioHttp
   )
   .settings(stdSettings("ziohttp"))
 
