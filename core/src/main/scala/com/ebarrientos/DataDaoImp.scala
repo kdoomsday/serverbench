@@ -11,4 +11,14 @@ class DataDaoImp extends DataDao {
     val zip    = Random.between(1000, 9999).toString()
     Data(id, name, Address(street, zip))
   })
+
+  /** @return [[getOne(id)]] with a random positive id */
+  private def getOneNoId() =
+    getOne(BigDecimal(Random.between(1, Int.MaxValue)))
+
+  def getList(n: Int): Task[Seq[Data]] =
+    if (n < 1)
+      getOneNoId().map(bd => Seq(bd))
+    else
+      Task.collectAllPar((1 until(n)).map(_ => getOneNoId()))
 }
