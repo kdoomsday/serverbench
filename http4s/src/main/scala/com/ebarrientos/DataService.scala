@@ -16,7 +16,8 @@ import org.http4s.circe._
 import org.http4s.dsl._
 import org.http4s.implicits._
 
-// TODO Run as task without having to unsafeRun here
+import scala.math.{ min, max }
+
 class DataService(dao: DataDao) {
   private val dsl = new Http4sDsl[Task] {}
   import dsl._
@@ -26,6 +27,10 @@ class DataService(dao: DataDao) {
   val dataService = HttpRoutes.of[Task] {
     case GET -> Root / "data" / IntVar(id) =>
       dao.getOne(id).flatMap(data => Ok(data.asJson))
+
+    case GET -> Root / "data" / "list" / IntVar(n) =>
+      val fixedN = max(min(n, 100), 0)
+      dao.getList(fixedN).flatMap(ds => Ok(ds.asJson))
   }
 
   val app: HttpApp[Task] = dataService.orNotFound
