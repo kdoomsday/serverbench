@@ -20,5 +20,5 @@ class DataDaoImp extends DataDao {
     if (n < 1)
       getOneNoId().map(bd => Seq(bd))
     else
-      Task.collectAllPar((1 until(n)).map(_ => getOneNoId()))
+      Task.collectAllPar((1 to n).map(_ => getOneNoId()))
 }
