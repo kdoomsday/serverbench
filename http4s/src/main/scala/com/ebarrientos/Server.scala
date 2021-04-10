@@ -13,7 +13,8 @@ object Server extends zio.App {
 
   private def mkServer(): ZIO[Any, Throwable, Unit] =
     ZIO.runtime[Any].flatMap(implicit rts =>
-      BlazeServerBuilder[Task]
+      BlazeServerBuilder
+        .apply[Task](scala.concurrent.ExecutionContext.global)
         .bindHttp(9000, "localhost")
         .withHttpApp(dataService.app)
         .serve
