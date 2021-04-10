@@ -1,4 +1,5 @@
 import Dependencies._
+import BuildHelper._
 
 ThisBuild / scalaVersion     := "2.13.4"
 ThisBuild / version          := "0.1.0-SNAPSHOT"
@@ -15,12 +16,14 @@ lazy val root = (project in file("."))
     libraryDependencies += scalaTest % Test,
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
   )
+  .settings(stdSettings("root"))
 
 // --- Data project ------------------------------------------------------------
 lazy val core = (project in file("core"))
   .settings(libraryDependencies ++= zioDeps)
   .settings(libraryDependencies ++= circeDeps)
   .settings(testSettings)
+  .settings(stdSettings("core"))
 
 
 // --- Server projects ---------------------------------------------------------
@@ -29,12 +32,14 @@ lazy val http4s = (project in file("http4s"))
   .settings(
     libraryDependencies ++= http4sDeps
   )
+  .settings(stdSettings("http4s"))
 
 lazy val ziohttp = (project in file("ziohttp"))
   .dependsOn(core)
   .settings(
     libraryDependencies ++= zioDeps
   )
+  .settings(stdSettings("ziohttp"))
 
 
 // --- Dependencies ------------------------------------------------------------
