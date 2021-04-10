@@ -3,11 +3,7 @@ package com.ebarrientos
 import org.http4s.HttpRoutes
 import zio.Task
 import zio.interop.catz._
-import zio.interop.catz.implicits._
 
-import cats.implicits._
-
-import io.circe._
 import io.circe.syntax._
 import io.circe.generic.auto._
 

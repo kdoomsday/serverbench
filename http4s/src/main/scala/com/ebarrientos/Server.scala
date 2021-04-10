@@ -1,6 +1,5 @@
 package com.ebarrientos
 
-import cats.effect.Blocker
 import zio.Task
 import org.http4s.server.blaze.BlazeServerBuilder
 import zio.interop.catz._
