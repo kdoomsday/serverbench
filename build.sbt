@@ -55,6 +55,7 @@ val circeVersion = "0.13.0"
 lazy val circeDeps = Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-generic-extras",
   "io.circe" %% "circe-parser"
 ).map(_ % circeVersion)
 
@@ -66,7 +67,7 @@ lazy val zioDeps = Seq(
   "dev.zio" %% "zio-interop-cats" % zioCatsVersion
 )
 
-// Htt4s
+// Http4s
 val http4sVersion   = "0.21.15"
 lazy val http4sDeps = Seq(
   "org.http4s" %% "http4s-blaze-server",

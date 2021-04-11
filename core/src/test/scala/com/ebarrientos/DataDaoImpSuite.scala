@@ -1,7 +1,6 @@
 package com.ebarrientos
 
 import org.scalatest.funsuite.AnyFunSuite
-import zio.Task
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
 class DataDaoImpSuite extends AnyFunSuite with ScalaCheckPropertyChecks {
