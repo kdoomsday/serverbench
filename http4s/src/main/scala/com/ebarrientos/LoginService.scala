@@ -12,11 +12,15 @@ import org.http4s.dsl._
 
 import com.ebarrientos.Encoders.UserEncoders._
 
+/** Handles user login
+  *
+  * @param dao [[UserDao]] for authenticating the user
+  */
 class LoginService(dao: UserDao) {
   private val dsl = new Http4sDsl[Task] {}
   import dsl._
 
-  implicit val dec: EntityDecoder[Task, LoginRequest] =
+  implicit val decoder: EntityDecoder[Task, LoginRequest] =
     jsonOf[Task, LoginRequest]
 
   val dataService = HttpRoutes.of[Task] { case req @ POST -> Root / "login" =>
