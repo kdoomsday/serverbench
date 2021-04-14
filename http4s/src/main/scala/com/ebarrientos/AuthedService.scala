@@ -18,7 +18,10 @@ class AuthedService(auth: Auth) {
   import dsl._
 
   val authedRoutes: AuthedRoutes[User, Task] = AuthedRoutes.of {
-    case GET -> Root / "secureData" as _ => Ok(UUID.randomUUID().toString())
+    case GET -> Root / "secureData" as user => {
+      println(s"Authenticated as ${user.login}")
+      Ok(UUID.randomUUID().toString())
+    }
   }
 
   val service: HttpRoutes[Task] = auth.middleware(authedRoutes)
