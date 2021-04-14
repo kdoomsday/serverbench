@@ -10,7 +10,7 @@ import org.http4s.dsl._
 import zio.Task
 import zio.interop.catz._
 import org.http4s.server.AuthMiddleware
-import org.http4s.headers.Authorization
+import org.http4s.util.CaseInsensitiveString
 
 /** Handles authenticating a request by authorization headers
   *
@@ -20,12 +20,14 @@ class Auth(dao: UserDao) {
   private val dsl = new Http4sDsl[Task] {}
   import dsl._
 
+  // TODO for some reason the authorization header is present, but request.headers.get doesn't find it
   val authUser: Kleisli[Task, Request[Task], Either[String, User]] =
     Kleisli({ request =>
       request.headers.foreach(h => println(s"Header: $h"))
+      println("------------------------------------------------------------")
 
-      val res: Either[String, Authorization] =
-        request.headers.get(Authorization).toRight("No authorization headers")
+      val res: Either[String, Header] =
+        request.headers.get(CaseInsensitiveString("Authorization")).toRight("No authorization headers")
 
       res.flatTraverse(t =>
         dao.validateToken(t.value).map(_.toRight("Invalid token"))
