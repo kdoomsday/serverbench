@@ -9,13 +9,19 @@ import zio.ExitCode
 import cats.implicits._
 import org.http4s.HttpApp
 import org.http4s.implicits._
+import zio.Ref
+import java.util.UUID
 
 object Server extends zio.App {
-  val dao          = new DataDaoImp()
-  val dataService  = new DataService(dao)
-  val loginService = new LoginService(UserDaoDummy)
 
-  val userDao       = UserDaoDummy
+  val tokenRef =
+    zio.Runtime.default.unsafeRun(Ref.make(UUID.randomUUID().toString()))
+
+  val dao     = new DataDaoImp()
+  val userDao = new UserDaoDummy(tokenRef)
+
+  val dataService   = new DataService(dao)
+  val loginService  = new LoginService(userDao)
   val auth          = new Auth(userDao)
   val authedService = new AuthedService(auth)
 

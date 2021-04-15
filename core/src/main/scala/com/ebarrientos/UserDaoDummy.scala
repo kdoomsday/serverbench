@@ -4,10 +4,7 @@ import zio.Task
 import java.util.UUID
 import zio.Ref
 
-object UserDaoDummy extends UserDao {
-
-  private val tokenRef: Ref[String] =
-    zio.Runtime.global.unsafeRun(Ref.make(UUID.randomUUID().toString()))
+class UserDaoDummy(tokenRef: Ref[String]) extends UserDao {
 
   private def user(tok: String) = User(
     UserId(1L),
