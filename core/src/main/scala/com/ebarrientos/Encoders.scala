@@ -12,5 +12,8 @@ object Encoders {
 
     implicit val clearPasswordEncoder: Encoder[ClearPassword] = deriveUnwrappedEncoder
     implicit val clearPasswordDecoder: Decoder[ClearPassword] = deriveUnwrappedDecoder
+
+    implicit val tokenEncoder: Encoder[Token] = deriveUnwrappedEncoder
+    implicit val tokenDecoder: Decoder[Token] = deriveUnwrappedDecoder
   }
 }
