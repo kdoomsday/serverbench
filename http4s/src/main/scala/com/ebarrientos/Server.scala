@@ -11,36 +11,64 @@ import org.http4s.HttpApp
 import org.http4s.implicits._
 import zio.Ref
 import java.util.UUID
+import fs2.concurrent.SignallingRef
+import zio.interop.catz
+import zio.console._
 
 object Server extends zio.App {
 
-  val tokenRef =
-    zio.Runtime.default.unsafeRun(Ref.make(UUID.randomUUID().toString()))
+  /** Waits for a line and then changes the shutdown signal to true
+    *
+    * @param ref shutdown signal
+    * @return Task that performs the stated action
+    */
+  private def shutdownOnEOL(ref: SignallingRef[Task, Boolean]) =
+    for {
+      _ <- getStrLn
+      _ <- ref.set(true)
+    } yield ()
 
-  val dao     = new DataDaoImp()
-  val userDao = new UserDaoDummy(tokenRef)
-
-  val dataService   = new DataService(dao)
-  val loginService  = new LoginService(userDao)
-  val auth          = new Auth(userDao)
-  val authedService = new AuthedService(auth)
-
-  val httpApp: HttpApp[Task] =
-    (dataService.dataService <+> loginService.dataService <+> authedService.service).orNotFound
-
-  private def mkServer(): ZIO[Any, Throwable, Unit] =
+  private def mkServer(): ZIO[Console, Throwable, Unit] =
     ZIO
       .runtime[Any]
       .flatMap(implicit rts =>
-        BlazeServerBuilder
-          .apply[Task](scala.concurrent.ExecutionContext.global)
-          .bindHttp(9000, "localhost")
-          .withHttpApp(httpApp)
-          .serve
-          .compile
-          .drain
+        for {
+          tokenRef <- Ref.make(UUID.randomUUID().toString())
+
+          // Daos
+          dao     = new DataDaoImp()
+          userDao = new UserDaoDummy(tokenRef)
+
+          // Services
+          dataService   = new DataService(dao)
+          loginService  = new LoginService(userDao)
+          auth          = new Auth(userDao)
+          authedService = new AuthedService(auth)
+
+          // App that combines services
+          httpApp: HttpApp[Task] = (dataService.dataService
+                                     <+> loginService.dataService
+                                     <+> authedService.service).orNotFound
+
+          // For shutdown
+          exitRef               <- cats
+                                     .effect
+                                     .concurrent
+                                     .Ref
+                                     .of(cats.effect.ExitCode(0))(catz.taskEffectInstance)
+          signalRef             <- SignallingRef[Task, Boolean](false)
+          _                     <- shutdownOnEOL(signalRef).fork
+
+          server <- BlazeServerBuilder
+                      .apply[Task](scala.concurrent.ExecutionContext.global)
+                      .bindHttp(9000, "localhost")
+                      .withHttpApp(httpApp)
+                      .serveWhile(signalRef, exitRef)
+                      .compile
+                      .drain
+        } yield server
       )
 
   def run(args: List[String]) =
-    mkServer().catchAll(_ => Task.succeed(ExitCode(2))).map(_ => ExitCode(1))
+    mkServer().catchAll(_ => Task.succeed(ExitCode(2))).map(_ => ExitCode(0))
 }
