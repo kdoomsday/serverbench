@@ -34,6 +34,5 @@ class UserDaoDummy(tokenRef: Ref[String]) extends UserDao {
   def validateToken(token: String): Task[Option[User]] =
     for {
       v   <- tokenRef.get
-      _    = println(s"$v vs received $token")
     } yield if (v == token) Some(user(v)) else None
 }
