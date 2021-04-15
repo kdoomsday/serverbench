@@ -25,6 +25,7 @@ object Server extends zio.App {
   private def shutdownOnEOL(ref: SignallingRef[Task, Boolean]) =
     for {
       _ <- getStrLn
+      _ <- putStrLn("Shutting down server")
       _ <- ref.set(true)
     } yield ()
 
