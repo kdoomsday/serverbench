@@ -14,31 +14,28 @@ import java.util.UUID
 
 object Server extends zio.App {
 
-  val tokenRef =
-    zio.Runtime.default.unsafeRun(Ref.make(UUID.randomUUID().toString()))
-
-  val dao     = new DataDaoImp()
-  val userDao = new UserDaoDummy(tokenRef)
-
-  val dataService   = new DataService(dao)
-  val loginService  = new LoginService(userDao)
-  val auth          = new Auth(userDao)
-  val authedService = new AuthedService(auth)
-
-  val httpApp: HttpApp[Task] =
-    (dataService.dataService <+> loginService.dataService <+> authedService.service).orNotFound
-
   private def mkServer(): ZIO[Any, Throwable, Unit] =
     ZIO
       .runtime[Any]
       .flatMap(implicit rts =>
-        BlazeServerBuilder
-          .apply[Task](scala.concurrent.ExecutionContext.global)
-          .bindHttp(9000, "localhost")
-          .withHttpApp(httpApp)
-          .serve
-          .compile
-          .drain
+        for {
+          tokenRef              <- Ref.make(UUID.randomUUID().toString())
+          dao                    = new DataDaoImp()
+          userDao                = new UserDaoDummy(tokenRef)
+          dataService            = new DataService(dao)
+          loginService           = new LoginService(userDao)
+          auth                   = new Auth(userDao)
+          authedService          = new AuthedService(auth)
+          httpApp: HttpApp[Task] =
+            (dataService.dataService <+> loginService.dataService <+> authedService.service).orNotFound
+          server                <- BlazeServerBuilder
+                                     .apply[Task](scala.concurrent.ExecutionContext.global)
+                                     .bindHttp(9000, "localhost")
+                                     .withHttpApp(httpApp)
+                                     .serve
+                                     .compile
+                                     .drain
+        } yield server
       )
 
   def run(args: List[String]) =
