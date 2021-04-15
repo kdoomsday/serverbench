@@ -20,14 +20,16 @@ class Auth(dao: UserDao) {
   private val dsl = new Http4sDsl[Task] {}
   import dsl._
 
-  // TODO for some reason the authorization header is present, but request.headers.get doesn't find it
   val authUser: Kleisli[Task, Request[Task], Either[String, User]] =
     Kleisli({ request =>
-      request.headers.foreach(h => println(s"Header: $h"))
-      println("------------------------------------------------------------")
+      // request.headers.foreach(h => println(s"Header: $h"))
+      // println("------------------------------------------------------------")
 
       val res: Either[String, Header] =
-        request.headers.get(CaseInsensitiveString("Authorization")).toRight("No authorization headers")
+        request
+          .headers
+          .get(CaseInsensitiveString("Authorization"))
+          .toRight("No authorization headers")
 
       res.flatTraverse(t =>
         dao.validateToken(t.value).map(_.toRight("Invalid token"))
