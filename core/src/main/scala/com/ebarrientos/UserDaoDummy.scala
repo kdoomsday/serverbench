@@ -3,8 +3,10 @@ package com.ebarrientos
 import zio.Task
 import java.util.UUID
 import zio.Ref
+import com.typesafe.scalalogging.Logger
 
 class UserDaoDummy(tokenRef: Ref[String]) extends UserDao {
+  val log = Logger[UserDaoDummy]
 
   private def user(tok: String) = User(
     UserId(1L),
@@ -20,19 +22,19 @@ class UserDaoDummy(tokenRef: Ref[String]) extends UserDao {
       loginReq.login == Login("user")
       && loginReq.password == ClearPassword("password")
     ) {
+      log.debug(s"Successful login for ${loginReq.login}")
       val newToken = UUID.randomUUID().toString()
       for {
         tok <- tokenRef.modify(_ => (newToken, newToken))
       } yield Some(user(tok))
-      // tokenRef.set(UUID.randomUUID().toString())
-      //     *> tokenRef.get.map(tok => Some(user(tok)))
     }
     else {
+      log.info(s"Invalid attempted login for ${loginReq.login}")
       Task.succeed(None)
     }
 
   def validateToken(token: String): Task[Option[User]] =
     for {
-      v   <- tokenRef.get
+      v <- tokenRef.get
     } yield if (v == token) Some(user(v)) else None
 }

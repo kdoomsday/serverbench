@@ -24,6 +24,7 @@ lazy val core = (project in file("core"))
   .settings(libraryDependencies ++= circeDeps)
   .settings(testSettings)
   .settings(stdSettings("core"))
+  .settings(libraryDependencies ++= loggingDeps)
 
 
 // --- Server projects ---------------------------------------------------------
@@ -82,6 +83,14 @@ lazy val http4sDeps = Seq(
 val zioHttpVersion = "1.0.0.0-RC13"
 lazy val zioHttp = Seq(
   "io.d11"  %% "zhttp"            % zioHttpVersion
+)
+
+// Logging
+val scalaLoggingVersion = "3.9.3"
+val logbackVersion = "1.2.3"
+lazy val loggingDeps = Seq(
+  "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion,
+  "ch.qos.logback" % "logback-classic" % logbackVersion
 )
 
 // See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
