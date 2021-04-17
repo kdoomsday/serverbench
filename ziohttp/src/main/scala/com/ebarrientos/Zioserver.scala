@@ -5,14 +5,16 @@ import zhttp.service.Server
 import zio.console._
 import zhttp.service.server.ServerChannelFactory
 import zhttp.service.EventLoopGroup
+import zhttp.http.Http
 
 object Zioserver extends zio.App {
   private val PORT    = 9000
   private val THREADS = 4
 
-  val dataroute = Task {
+  val routes: Task[Http[Any, Throwable]] = Task {
     val dataDao = new DataDaoImp()
-    new Dataroute(dataDao)
+    val dataroute = new Dataroute(dataDao)
+    dataroute.routes
   }
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] =
@@ -22,10 +24,10 @@ object Zioserver extends zio.App {
 
   val server =
     (for {
-      dr <- dataroute
+      r <- routes
     } yield (Server.port(PORT)
       ++ Server.disableLeakDetection
-      ++ Server.app(dr.routes))
+      ++ Server.app(r))
       .make
       .use(_ => putStrLn(s"Starting server on port $PORT") *> ZIO.never)
       .provideCustomLayer(
