@@ -6,18 +6,19 @@ import zhttp.service.Server
 import zio.console._
 
 object Zioserver extends zio.App {
+  private val PORT = 9000
 
-  val dataroute = Http.collect { case Method.GET -> Root / "data" / id =>
+  val dataroute: Http[Any,Throwable] = Http.collect { case Method.GET -> Root / "data" / id =>
     Response.text(s"Texto: $id")
   }
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] =
     Server
-      .start(9000, dataroute)
+      .start(PORT, dataroute)
       .raceFirst(shutdownTask)
       .exitCode
 
-  // val shutdownTask = getStrLn.catchAll(_ => Task.effectTotal(""))
+  // Task that finishes on input so it can be raced with the server
   val shutdownTask =
     (for {
       _ <- getStrLn
