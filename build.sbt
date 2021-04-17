@@ -81,7 +81,7 @@ lazy val http4sDeps = Seq(
 
 
 // ZIO http
-val zioHttpVersion = "1.0.0.0-RC13"
+val zioHttpVersion = "1.0.0.0-RC15"
 lazy val zioHttp = Seq(
   "io.d11"  %% "zhttp"            % zioHttpVersion
 )
