@@ -6,15 +6,20 @@ import zio.console._
 import zhttp.service.server.ServerChannelFactory
 import zhttp.service.EventLoopGroup
 import zhttp.http.Http
+import java.util.UUID
 
 object Zioserver extends zio.App {
   private val PORT    = 9000
   private val THREADS = 4
 
-  val routes: Task[Http[Any, Throwable]] = Task {
+  val routes: Task[Http[Any, Throwable]] = Ref.make(UUID.randomUUID().toString()).map { ref =>
     val dataDao = new DataDaoImp()
     val dataroute = new Dataroute(dataDao)
-    dataroute.routes
+
+    val userDao = new UserDaoDummy(ref)
+    val loginroute = new Loginroute(userDao)
+
+    dataroute.routes <> loginroute.routes
   }
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] =
