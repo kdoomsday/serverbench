@@ -20,7 +20,7 @@ class Loginroute(dao: UserDao) {
         .flatMap(lr => dao.login(lr))
         .map(_.map(user2response))
         .map(
-          _.fold(Response.fromHttpError(HttpError.Forbidden("")))(u =>
+          _.fold(Response.fromHttpError(HttpError.Forbidden("Invalid login credentials")))(u =>
             Response.jsonString(u.asJson.toString())
           )
         )

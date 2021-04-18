@@ -18,8 +18,9 @@ object Zioserver extends zio.App {
 
     val userDao = new UserDaoDummy(ref)
     val loginroute = new Loginroute(userDao)
+    val authedroute = new Authedroute(userDao)
 
-    dataroute.routes <> loginroute.routes
+    dataroute.routes <> loginroute.routes <> authedroute.routes
   }
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] =
