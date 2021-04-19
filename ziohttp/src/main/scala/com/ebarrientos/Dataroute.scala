@@ -9,7 +9,7 @@ import com.typesafe.scalalogging.Logger
 import zio.ZIO
 
 class Dataroute(dao: DataDao) {
-  val log = Logger[UserDaoDummy]
+  val log = Logger[Dataroute]
 
   val routes: Http[Any, Throwable] = Http.collectM {
     case Method.GET -> Root / "data" / id =>
