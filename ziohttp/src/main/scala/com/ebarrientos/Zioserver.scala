@@ -12,16 +12,19 @@ object Zioserver extends zio.App {
   private val PORT    = 9000
   private val THREADS = 4
 
-  val routes: Task[Http[Any, Throwable]] = Ref.make(UUID.randomUUID().toString()).map { ref =>
-    val dataDao = new DataDaoImp()
-    val dataroute = new Dataroute(dataDao)
+  val routes: Task[Http[Any, Throwable]] =
+    Ref.make(UUID.randomUUID().toString()).map { ref =>
+      val dataDao = new DataDaoImp()
 
-    val userDao = new UserDaoDummy(ref)
-    val loginroute = new Loginroute(userDao)
-    val authedroute = new Authedroute(userDao)
+      val userDao    = new UserDaoDummy(ref)
+      val authmiddle = new AuthMiddleware(userDao)
 
-    dataroute.routes <> loginroute.routes <> authedroute.routes
-  }
+      val dataroute   = new Dataroute(dataDao)
+      val loginroute  = new Loginroute(userDao)
+      val authedroute = new Authedroute(authmiddle)
+
+      dataroute.routes <> loginroute.routes <> authedroute.routes
+    }
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] =
     server
@@ -38,8 +41,7 @@ object Zioserver extends zio.App {
       .use(_ => putStrLn(s"Starting server on port $PORT") *> ZIO.never)
       .provideCustomLayer(
         ServerChannelFactory.auto ++ EventLoopGroup.auto(THREADS)
-      ))
-      .flatten
+      )).flatten
 
   // Task that finishes on input so it can be raced with the server
   val shutdownTask =
