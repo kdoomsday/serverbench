@@ -10,6 +10,8 @@ class Authedroute(dao: UserDao) {
   val authmiddle = new Middleware[String, User] {
 
     def apply(req: Request) = {
+      // Option[Nothing] when no headers
+      // Task[Option[User]] when headers found
       val tou: IO[Option[Nothing], Task[Option[User]]] = ZIO
         .fromOption(
           req
