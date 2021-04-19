@@ -1,19 +1,20 @@
 package com.ebarrientos
 
-import zio.Task
-import org.http4s.server.blaze.BlazeServerBuilder
-import zio.interop.catz._
-import zio.interop.catz.implicits._
-import zio.ZIO
-import zio.ExitCode
 import cats.implicits._
+import fs2.concurrent.SignallingRef
 import org.http4s.HttpApp
 import org.http4s.implicits._
+import org.http4s.server.blaze.BlazeServerBuilder
+import zio.ExitCode
 import zio.Ref
-import java.util.UUID
-import fs2.concurrent.SignallingRef
-import zio.interop.catz
+import zio.Task
+import zio.ZIO
 import zio.console._
+import zio.interop.catz
+import zio.interop.catz._
+import zio.interop.catz.implicits._
+
+import java.util.UUID
 
 object Server extends zio.App {
 
