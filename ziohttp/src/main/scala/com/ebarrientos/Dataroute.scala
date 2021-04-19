@@ -23,6 +23,8 @@ class Dataroute(dao: DataDao) {
     case Method.GET -> Root / "data" / "list" / n =>
       val fixedN = max(min(n.toInt, 100), 0)
       ZIO.effectTotal(log.debug(s"Get data list n=$fixedN")) *>
-        dao.getList(fixedN).map(ds => Response.jsonString(ds.asJson.toString()))
+        dao
+          .getList(fixedN)
+          .map(ds => Response.jsonString(ds.asJson.toString()))
   }
 }
