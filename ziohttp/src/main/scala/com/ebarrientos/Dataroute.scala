@@ -1,15 +1,16 @@
 package com.ebarrientos
 
-import zhttp.http._
-import io.circe.syntax._
-import io.circe.generic.auto._
-
-import scala.math.{max, min}
 import com.typesafe.scalalogging.Logger
+import io.circe.generic.auto._
+import io.circe.syntax._
+import zhttp.http._
 import zio.ZIO
 
+import scala.math.max
+import scala.math.min
+
 class Dataroute(dao: DataDao) {
-  val log = Logger[UserDaoDummy]
+  val log = Logger[Dataroute]
 
   val routes: Http[Any, Throwable] = Http.collectM {
     case Method.GET -> Root / "data" / id =>
