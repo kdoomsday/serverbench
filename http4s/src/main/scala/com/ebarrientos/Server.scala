@@ -14,8 +14,6 @@ import zio.interop.catz
 import zio.interop.catz._
 import zio.interop.catz.implicits._
 
-import java.util.UUID
-
 object Server extends zio.App {
 
   /** Waits for a line and then changes the shutdown signal to true
@@ -35,7 +33,7 @@ object Server extends zio.App {
       .runtime[Any]
       .flatMap(implicit rts =>
         for {
-          tokenRef <- Ref.make(UUID.randomUUID().toString())
+          tokenRef <- Ref.make[Option[String]](None)
 
           // Daos
           dao     = new DataDaoImp()
