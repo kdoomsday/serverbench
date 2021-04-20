@@ -34,23 +34,8 @@ class UserDaoDummy(tokenRef: Ref[Option[String]]) extends UserDao {
     }
 
   def validateToken(token: String): Task[Option[User]] = {
-    // val res = for {
-    //   v <- tokenRef.get
-    // } yield v.fold[Option[User]](None)(t =>
-    //   if (t == token) Some(user(t)) else None
-    // )
-
-    // res
-
-    // val res = for {
-    //   v <- tokenRef.get
-    // } yield v.map(t => if (t == token) Some(user(t)) else None)
-
-    // res.map(_.flatten)
-
-    (for {
-      v <- tokenRef.get
-    } yield v.map(t => if (t == token) Some(user(t)) else None))
-      .map(_.flatten)
+    tokenRef
+      .get
+      .map(_.map(t => if (t == token) Some(user(t)) else None).flatten)
   }
 }
