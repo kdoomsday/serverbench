@@ -6,14 +6,13 @@ import zio.console._
 import zhttp.service.server.ServerChannelFactory
 import zhttp.service.EventLoopGroup
 import zhttp.http.Http
-import java.util.UUID
 
 object Zioserver extends zio.App {
   private val PORT    = 9000
   private val THREADS = 4
 
   val routes: Task[Http[Any, Throwable]] =
-    Ref.make(UUID.randomUUID().toString()).map { ref =>
+    Ref.make[Option[String]](None).map { ref =>
       val dataDao = new DataDaoImp()
 
       val userDao    = new UserDaoDummy(ref)

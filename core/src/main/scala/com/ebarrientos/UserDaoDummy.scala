@@ -5,7 +5,7 @@ import java.util.UUID
 import zio.Ref
 import com.typesafe.scalalogging.Logger
 
-class UserDaoDummy(tokenRef: Ref[String]) extends UserDao {
+class UserDaoDummy(tokenRef: Ref[Option[String]]) extends UserDao {
   val log = Logger[UserDaoDummy]
 
   private def user(tok: String) = User(
@@ -25,7 +25,7 @@ class UserDaoDummy(tokenRef: Ref[String]) extends UserDao {
       log.debug(s"Successful login for ${loginReq.login}")
       val newToken = UUID.randomUUID().toString()
       for {
-        tok <- tokenRef.modify(_ => (newToken, newToken))
+        tok <- tokenRef.modify(_ => (newToken, Some(newToken)))
       } yield Some(user(tok))
     }
     else {
@@ -33,8 +33,9 @@ class UserDaoDummy(tokenRef: Ref[String]) extends UserDao {
       Task.succeed(None)
     }
 
-  def validateToken(token: String): Task[Option[User]] =
-    for {
-      v <- tokenRef.get
-    } yield if (v == token) Some(user(v)) else None
+  def validateToken(token: String): Task[Option[User]] = {
+    tokenRef
+      .get
+      .map(_.map(t => if (t == token) Some(user(t)) else None).flatten)
+  }
 }
