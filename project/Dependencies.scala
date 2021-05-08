@@ -9,8 +9,6 @@ object Dependencies {
   val scalaLoggingVersion = "3.9.3"
   val logbackVersion      = "1.2.3"
 
-  lazy val scalaTest = "org.scalatest" %% "scalatest" % "3.2.2"
-
   // ZIO http
   lazy val zioHttp = Seq(
     "io.d11" %% "zhttp" % zioHttpVersion

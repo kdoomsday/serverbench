@@ -13,10 +13,11 @@ lazy val testSettings = Seq(
 lazy val root = (project in file("."))
   .settings(
     name := "serverbench",
-    libraryDependencies += scalaTest % Test,
     addCompilerPlugin("com.olegpy" %% "better-monadic-for" % "0.3.1")
   )
+  .settings(testSettings)
   .settings(stdSettings("root"))
+  .aggregate(core, http4s, ziohttp)
 
 // --- Data project ------------------------------------------------------------
 lazy val core = (project in file("core"))
