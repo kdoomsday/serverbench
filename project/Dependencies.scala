@@ -2,12 +2,14 @@ import sbt._
 
 object Dependencies {
   val zioHttpVersion      = "1.0.0.0-RC15"
-  val zioVersion          = "1.0.5"
+  val zioVersion          = "1.0.13"
   val zioCatsVersion      = "2.2.0.1"
   val circeVersion        = "0.13.0"
   val http4sVersion       = "0.21.15"
   val scalaLoggingVersion = "3.9.3"
   val logbackVersion      = "1.2.3"
+  val akkaVersion         = "2.6.8"
+  val akkaHttpVersion     = "10.2.7"
 
   // ZIO http
   lazy val zioHttp = Seq(
@@ -36,13 +38,20 @@ object Dependencies {
   )
 
   // Http4s
-  lazy val http4sDeps  = Seq(
+  lazy val http4sDeps   = Seq(
     "org.http4s" %% "http4s-blaze-server",
     "org.http4s" %% "http4s-blaze-client",
     "org.http4s" %% "http4s-circe",
     "org.http4s" %% "http4s-dsl",
     "org.http4s" %% "http4s-twirl"
   ).map(_ % http4sVersion)
+
+  // Akka Http
+  lazy val akkaHttpDeps = Seq(
+    "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
+    "com.typesafe.akka" %% "akka-stream"      % akkaVersion,
+    "com.typesafe.akka" %% "akka-http"        % akkaHttpVersion
+  )
 
   // Logging
   lazy val loggingDeps = Seq(
