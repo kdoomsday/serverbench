@@ -1,0 +1,114 @@
+#+TITLE: Server Benchmarks
+* Calls                                                                :verb:
+template http://localhost:9000
+# template http://192.168.0.5:9000
+** Get data
+#+begin_src verb :wrap src ob-verb-response :op send
+  get /data/{{(verb-var id)}}
+#+end_src
+
+** Get list
+#+begin_src verb :wrap src ob-verb-response :op send get-body
+  get /data/list/{{(verb-var n))}}
+#+end_src
+
+** Login
+*** Fail
+post /login
+
+#+begin_src json
+  {
+      "login" : "wrong",
+      "password" : "alsoWrong"
+  }
+#+end_src
+
+*** Success
+:PROPERTIES:
+:Verb-Store: loginResponse
+:END:
+post /login
+
+#+begin_src json
+  {
+      "login" : "user",
+      "password" : "password"
+  }
+#+end_src
+** Authed
+*** With header
+get /secureData
+Authorization: {{(verb-json-get (oref (verb-stored-response "loginResponse") body) "token")}}
+*** With header manual token
+get /secureData
+Authorization: {{(read-string "Token: ")}}
+*** No header
+get /secureData
+* Pending changes
+** Scalafix
+Add to project and configure
+** Actual performance testing
+* Thinkspace
+** zio middleware
+My middleware takes a request and extracts a value from it. This allows, for
+example, for authentication.
+
+#+begin_src dot :file devel-middleware.png
+  digraph D {
+    Request    [shape=rectangle]
+    Resp       [label="IO[E, Wrapped[A]]" shape=rectangle]
+    Middleware [label="Middleware[+E, +A]"]
+
+    FRequest   [label="Request"]
+    FReq       [label="Function[Request, Response]"]
+    FResp      [label="Response"]
+  
+    { rank=same Resp, Request, Middleware }
+    { rank=same FRequest, FReq, FResp }
+
+    Request -> Middleware -> Resp
+    FRequest -> FReq -> FResp
+  }
+#+end_src
+
+#+RESULTS:
+[[file:devel-middleware.png]]
+* Test data
+** Test configuration
+- Apache JMeter
+- 100 users
+- 50 reps
+- Calls
+  - getData
+  - getList
+** Http4s
+*** Run 1 (no random paths)
+| Calls       | Samples | Avg | Median | 90% | 95% | 99% | Min | Max | Error% |    Throughput (/s) |               kb/s |
+|-------------+---------+-----+--------+-----+-----+-----+-----+-----+--------+--------------------+--------------------|
+| GetData     |   50000 |   2 |      1 |   6 |   8 |  12 |   0 |  35 |    0.0 |  1527.930570834861 |  325.2587275871685 |
+| GetDataList |   50000 |   3 |      2 |   8 |  10 |  14 |   0 |  29 |    0.0 | 1528.1640636938782 | 1043.8364009635075 |
+| TOTAL       |  100000 |   2 |      2 |   7 |   9 |  14 |   0 |  35 |    0.0 | 3055.7677616501146 | 1368.8938061019862 |
+*** Run 2
+| Calls       | Samples | Avg | Median | 90% | 95% | 99% | Min | Max | Error% |    Throughput (/s) |               kb/s |
+|-------------+---------+-----+--------+-----+-----+-----+-----+-----+--------+--------------------+--------------------|
+| GetData     |   50000 |   2 |      1 |   7 |  11 |  20 |   0 |  47 |    0.0 | 1834.7950533925361 |  393.9294587239918 |
+| GetDataList |   50000 |   3 |      2 |   9 |  14 |  26 |   0 |  59 |    0.0 | 1835.3338472268106 | 1253.8637003656904 |
+| TOTAL       |  100000 |   3 |      2 |   8 |  12 |  23 |   0 |  59 |    0.0 |  3669.455452810803 | 1647.3646142943637 |
+*** Run 3 (to a different server)
+| Calls       | Samples | Avg | Median | 90% | 95% |  99% | Min |  Max | Error% |    Throughput (/s) |               kb/s |
+|-------------+---------+-----+--------+-----+-----+------+-----+------+--------+--------------------+--------------------|
+| GetData     |    5000 | 819 |    817 | 915 | 929 | 1402 |   8 | 1704 |    0.0 | 60.178610114820785 | 12.876800374762295 |
+| GetDataList |    5000 | 787 |    821 | 919 | 939 | 1404 |   6 | 1707 |    0.0 |  60.24677077308657 |  41.13457707143459 |
+| TOTAL       |   10000 | 803 |    819 | 917 | 934 | 1404 |   6 | 1707 |    0.0 | 120.34708098155079 | 53.960293361053274 |
+
+** Ziohttp
+Does not complete. Gets the first batch of calls and then stops. I can still
+call the server directly, but JMeter gets nothing more. This apparently was
+caused by a bug in ziohttp. Moving to the next version solved the problem
+
+*** Run [3] (to a different server)
+| Calls       | Samples | Avg | Median |  90% |  95% |  99% | Min |  Max | Error% |   Throughput (/s) |               kb/s |
+|-------------+---------+-----+--------+------+------+------+-----+------+--------+-------------------+--------------------|
+| GetData     |    5000 | 617 |    606 |  806 |  889 | 1051 |  31 | 1431 |    0.0 | 66.85385746757588 | 17.798599098308596 |
+| GetDataList |    5000 | 841 |    819 | 1028 | 1122 | 1391 |   9 | 1783 |    0.0 | 66.96667738133505 |  63.42394395642478 |
+| TOTAL       |   10000 | 729 |    734 |  924 | 1047 | 1283 |   9 | 1783 |    0.0 | 133.6898395721925 |  81.10484730113636 |

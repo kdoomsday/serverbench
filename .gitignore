@@ -38,7 +38,6 @@ project/project
 .vscode/
 
 # Archivo con notas para pruebas
-Devel.org
 devel*.png
 
 # data
