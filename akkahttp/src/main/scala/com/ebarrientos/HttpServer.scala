@@ -11,17 +11,10 @@ import io.circe.syntax._
 import zio._
 import zio.console._
 import scala.concurrent.Future
+import scala.concurrent.duration._
 
 object HttpServerRoutingMinimal extends zio.App {
   implicit val system = ActorSystem(Behaviors.empty, "my-system")
-  // needed for the future flatMap/onComplete in the end
-  // implicit val executionContext = system.executionContext
-
-  // TODO
-  // def mkSystem(): ZManaged[Any, Throwable, ActorSystem[Any]] =
-  //   Managed.make(Task(ActorSystem(Behaviors.empty, "my-system")))(system =>
-  //     Task(system.terminate()).ignore
-  //   )
 
   def route(dataDao: DataDao): Route =
     pathPrefix("data" / IntNumber) { id =>
@@ -42,10 +35,7 @@ object HttpServerRoutingMinimal extends zio.App {
         server             <- ZIO.fromFuture { _ => serverBinding(dataDao) }
       } yield server
 
-    s
-      .disconnect
-      .raceFirst(monitorTask(s).disconnect)
-      .exitCode
+    monitorTask(s)
   }
 
   def serverBinding(dataDao: DataDao): Future[Http.ServerBinding] = {
@@ -62,20 +52,19 @@ object HttpServerRoutingMinimal extends zio.App {
 
     } yield (dao, userDao)
 
-  def monitorTask(activeBinding: ZIO[Any, Throwable, Http.ServerBinding]) =
+  def monitorTask(activeBinding: ZIO[Any, Throwable, Http.ServerBinding]): ZIO[Console,Nothing,ExitCode] =
     (for {
-      _  <- putStr("Server ready.")
+      sb <- activeBinding
+            _  <- putStr("Server ready.")
       _  <- getStrLn
       _  <- putStrLn("Shutting down server")
-      sb <- activeBinding
       _  <- shutDownAll(sb)
-    } yield "OK!")
-      .catchAll(e => Task.effectTotal(e.getMessage()))
-      .flatMap(t => putStrLn(s"Result: $t"))
+    } yield ExitCode.success)
+      .catchAll(_ => Task.effectTotal(ExitCode.failure))
 
   /** Close all resources */
   def shutDownAll(serverBinding: Http.ServerBinding) = Task {
-    serverBinding.unbind()
+    serverBinding.addToCoordinatedShutdown(10.seconds)
     system.terminate()
   }
 }
