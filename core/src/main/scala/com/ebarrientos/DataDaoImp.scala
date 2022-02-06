@@ -5,7 +5,7 @@ import scala.util.Random
 
 class DataDaoImp extends DataDao {
 
-  def getOne(id: BigDecimal): Task[Data] = Task.effect({
+  def getOne(id: BigInt): Task[Data] = Task.effect({
     val name   = Random.nextString(Random.between(3, 10))
     val street = Random.nextString(Random.between(5, 20))
     val zip    = Random.between(1000, 9999).toString()
@@ -14,7 +14,7 @@ class DataDaoImp extends DataDao {
 
   /** @return [[getOne(id)]] with a random positive id */
   private def getOneNoId() =
-    getOne(BigDecimal(Random.between(1, Int.MaxValue)))
+    getOne(BigInt(Random.between(1, Int.MaxValue)))
 
   def getList(n: Int): Task[Seq[Data]] =
     if (n < 1)

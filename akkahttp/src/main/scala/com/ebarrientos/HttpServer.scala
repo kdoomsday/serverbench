@@ -3,11 +3,6 @@ package com.ebarrientos
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.Directives._
-import io.circe.generic.auto._
-import io.circe.syntax._
 import zio._
 import zio.console._
 import scala.concurrent.Future
@@ -15,18 +10,6 @@ import scala.concurrent.duration._
 
 object HttpServerRoutingMinimal extends zio.App {
   implicit val system = ActorSystem(Behaviors.empty, "my-system")
-
-  def route(dataDao: DataDao): Route =
-    pathPrefix("data" / IntNumber) { id =>
-      get {
-        complete(
-          HttpEntity(
-            ContentTypes.`application/json`,
-            zio.Runtime.default.unsafeRun(dataDao.getOne(id)).asJson.toString
-          )
-        )
-      }
-    }
 
   override def run(args: List[String]): URIO[ZEnv, ExitCode] = {
     val s: ZIO[Any, Throwable, Http.ServerBinding] =
@@ -39,7 +22,8 @@ object HttpServerRoutingMinimal extends zio.App {
   }
 
   def serverBinding(dataDao: DataDao): Future[Http.ServerBinding] = {
-    Http().newServerAt("localhost", 9000).bind(route(dataDao))
+    val akkaRoute = new AkkaRoutes(dataDao)
+    Http().newServerAt("localhost", 9000).bind(akkaRoute.routes())
   }
 
   /** Build all the necessary Daos for the application */
