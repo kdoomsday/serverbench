@@ -19,10 +19,9 @@ class AuthMiddleware(dao: UserDao) extends Middleware[String, User] {
       val tou: IO[Option[Nothing], Task[Option[User]]] = ZIO
         .fromOption(
           req
-            .headers
-            .filter(h => h.name == "Authorization")
-            .headOption
-            .map(h => dao.validateToken(h.value.toString()))
+            .getHeaders
+            .getAuthorization
+            .map(h => dao.validateToken(h.toString()))
         )
 
       tou

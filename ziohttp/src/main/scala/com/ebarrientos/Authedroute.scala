@@ -6,13 +6,15 @@ import zio.Task
 
 class Authedroute(authmiddle: AuthMiddleware) {
 
-  val routes = Http.collectM { case req @ Method.GET -> Root / "secureData" =>
+  val routes = Http.collectZIO[Request] { case req @ Method.GET -> !! / "secureData" =>
     authmiddle(req)
-      .map(u => {
+      .map { u =>
         Response.text(
           s"Secret data for [${u.data.name}]: ${UUID.randomUUID().toString()}"
         )
-      })
-    .catchAll(msg => Task.succeed(Response.fromHttpError(HttpError.Forbidden(msg))))
+      }
+      .catchAll(msg =>
+        Task.succeed(Response.fromHttpError(HttpError.Forbidden(msg)))
+      )
   }
 }

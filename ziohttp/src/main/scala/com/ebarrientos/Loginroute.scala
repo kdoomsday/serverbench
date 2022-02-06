@@ -14,14 +14,14 @@ import Encoders.UserEncoders._
 /** Routes to handle login operations */
 class Loginroute(dao: UserDao) {
 
-  val routes: Http[Any, Throwable] = Http.collectM {
-    case req @ Method.POST -> Root / "login" =>
+  val routes: HttpApp[Any, Throwable] = Http.collectZIO {
+    case req @ Method.POST -> !! / "login" =>
       reqAsLR(req)
         .flatMap(lr => dao.login(lr))
         .map(_.map(user2response))
         .map(
           _.fold(Response.fromHttpError(HttpError.Forbidden("Invalid login credentials")))(u =>
-            Response.jsonString(u.asJson.toString())
+            Response.json(u.asJson.toString())
           )
         )
   }
@@ -36,8 +36,7 @@ class Loginroute(dao: UserDao) {
     */
   private def reqAsLR(req: Request): Task[LoginRequest] =
     ZIO.absolve(
-      ZIO
-        .fromOption(req.getBodyAsString)
+      req.getBodyAsString
         .mapError(_ => new Exception("No request body"))
         .map(decode[LoginRequest])
     )

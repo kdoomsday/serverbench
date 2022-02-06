@@ -12,19 +12,33 @@ import scala.math.min
 class Dataroute(dao: DataDao) {
   val log = Logger[Dataroute]
 
-  val routes: Http[Any, Throwable] = Http.collectM {
-    case Method.GET -> Root / "data" / id =>
-      ZIO.effectTotal(log.debug(s"Get data id=$id")) *>
-        dao
-          .getOne(id.toInt)
-          .map(_.asJson.toString())
-          .map(d => Response.jsonString(d))
+  val routes: HttpApp[Any, Throwable] =
+    Http.collectZIO[Request] {
+      case Method.GET -> !! / "data" / id =>
+        ZIO.effectTotal(log.debug(s"Get data id=$id")) *>
+          dao
+            .getOne(BigInt(id))
+            .map(_.asJson.toString())
+            .map(d => Response.json(d))
+            .catchAll(_ =>
+              ZIO.succeed(
+                Response.text(s"Bad id: $id").setStatus(Status.BAD_REQUEST)
+              )
+            )
 
-    case Method.GET -> Root / "data" / "list" / n =>
-      val fixedN = max(min(n.toInt, 100), 0)
-      ZIO.effectTotal(log.debug(s"Get data list n=$fixedN")) *>
-        dao
-          .getList(fixedN)
-          .map(ds => Response.jsonString(ds.asJson.toString()))
-  }
+      case Method.GET -> !! / "data" / "list" / n =>
+        ZIO
+          .effect(max(min(n.toInt, 100), 0)) // Ensure n in [0, 100]
+          .flatMap(fixedN =>
+            ZIO.effectTotal(log.debug(s"Get data list n=$fixedN")) *>
+              dao
+                .getList(fixedN)
+                .map(ds => Response.json(ds.asJson.toString()))
+                .catchAll(_ =>
+                  ZIO.succeed(
+                    Response.text(s"Bad n: $n").setStatus(Status.BAD_REQUEST)
+                  )
+                )
+          )
+    }
 }
