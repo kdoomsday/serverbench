@@ -15,12 +15,12 @@ class AkkaRoutes(dataDao: DataDao) {
 
   /** Data Routes */
   def routes(): Route =
-    dataRoutes()
+    dataRoutes
 
-  private def dataRoutes() =
+  private def dataRoutes: Route =
     concat(
       get {
-        pathPrefix("data" / IntNumber) { id =>
+        path("data" / IntNumber) { id =>
           complete(
             HttpEntity(
               ContentTypes.`application/json`,

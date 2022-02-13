@@ -21,10 +21,17 @@ object HttpServerRoutingMinimal extends zio.App {
     monitorTask(s)
   }
 
+
+  /** Creates and binds a server
+    *
+    * @param dataDao Server dependencies
+    * @return The [[Http.ServerBinding]] as a [[Future]]
+    */
   def serverBinding(dataDao: DataDao): Future[Http.ServerBinding] = {
     val akkaRoute = new AkkaRoutes(dataDao)
     Http().newServerAt("localhost", 9000).bind(akkaRoute.routes())
   }
+
 
   /** Build all the necessary Daos for the application */
   private def mkDaos(): ZIO[Any, Nothing, (DataDaoImp, UserDaoDummy)] =
@@ -36,10 +43,20 @@ object HttpServerRoutingMinimal extends zio.App {
 
     } yield (dao, userDao)
 
-  def monitorTask(activeBinding: ZIO[Any, Throwable, Http.ServerBinding]): ZIO[Console,Nothing,ExitCode] =
+
+  /** Task to handle the server.
+    * Starts the server then waits to allow a clean shutdown. On receiving
+    * <Enter> will shutdown the given binding and exit the application
+    *
+    * @param activeBinding
+    * @return
+    */
+  def monitorTask(
+      activeBinding: ZIO[Any, Throwable, Http.ServerBinding]
+  ): ZIO[Console, Nothing, ExitCode] =
     (for {
       sb <- activeBinding
-            _  <- putStr("Server ready.")
+      _  <- putStr("Server ready.")
       _  <- getStrLn
       _  <- putStrLn("Shutting down server")
       _  <- shutDownAll(sb)
