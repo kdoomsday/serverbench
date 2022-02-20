@@ -22,7 +22,7 @@ class AkkaRoutes(dataDao: DataDao, userDao: UserDao) {
   private def dataRoutes: Route =
     concat(
       get {
-        path("data" / IntNumber) { id =>
+        path("data" / LongNumber) { id =>
           complete(
             HttpEntity(
               ContentTypes.`application/json`,
@@ -52,7 +52,7 @@ class AkkaRoutes(dataDao: DataDao, userDao: UserDao) {
               .login(loginReq)
               .map { ou =>
                 ou match {
-                  case None       => complete(StatusCodes.Forbidden, "")
+                  case None       => complete(StatusCodes.Forbidden, "Unauthorized user")
                   case Some(user) => complete(StatusCodes.OK, user.asJson)
                 }
               }
