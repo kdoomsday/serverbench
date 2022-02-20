@@ -15,7 +15,7 @@ object HttpServerRoutingMinimal extends zio.App {
     val s: ZIO[Any, Throwable, Http.ServerBinding] =
       for {
         (dataDao, userDao) <- mkDaos()
-        server             <- ZIO.fromFuture { _ => serverBinding(dataDao) }
+        server             <- ZIO.fromFuture { _ => serverBinding(dataDao, userDao) }
       } yield server
 
     monitorTask(s)
@@ -27,8 +27,8 @@ object HttpServerRoutingMinimal extends zio.App {
     * @param dataDao Server dependencies
     * @return The [[Http.ServerBinding]] as a [[Future]]
     */
-  def serverBinding(dataDao: DataDao): Future[Http.ServerBinding] = {
-    val akkaRoute = new AkkaRoutes(dataDao)
+  def serverBinding(dataDao: DataDao, userDao: UserDao): Future[Http.ServerBinding] = {
+    val akkaRoute = new AkkaRoutes(dataDao, userDao)
     Http().newServerAt("localhost", 9000).bind(akkaRoute.routes())
   }
 

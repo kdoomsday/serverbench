@@ -10,6 +10,7 @@ object Dependencies {
   val logbackVersion      = "1.2.3"
   val akkaVersion         = "2.6.8"
   val akkaHttpVersion     = "10.2.7"
+  val akkaHttpJsonVersion = "1.40.0-RC1"
 
   // ZIO http
   lazy val zioHttp = Seq(
@@ -50,7 +51,8 @@ object Dependencies {
   lazy val akkaHttpDeps = Seq(
     "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
     "com.typesafe.akka" %% "akka-stream"      % akkaVersion,
-    "com.typesafe.akka" %% "akka-http"        % akkaHttpVersion
+    "com.typesafe.akka" %% "akka-http"        % akkaHttpVersion,
+    "de.heikoseeberger" %% "akka-http-circe"  % akkaHttpJsonVersion
   )
 
   // Logging
