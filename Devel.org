@@ -9,8 +9,9 @@ template http://localhost:9000
 #+end_src
 
 ** Get data, random id
+Choose a random ID in [0, 100000] and call with it
 #+begin_src verb :wrap src ob-verb-response :op send
-  get /data/{{(random)}}
+  get /data/{{(random 100000)}}
 #+end_src
 
 ** Get list
@@ -21,6 +22,7 @@ template http://localhost:9000
 ** Login
 *** Fail
 post /login
+Content-Type: application/json
 
 #+begin_src json
   {
@@ -34,6 +36,7 @@ post /login
 :Verb-Store: loginResponse
 :END:
 post /login
+Content-Type: application/json
 
 #+begin_src json
   {
